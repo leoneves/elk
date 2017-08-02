@@ -1,6 +1,6 @@
 elasticsearch:
-  image: elasticsearch:2.4.0
-  command: elasticsearch -Des.network.host=0.0.0.0
+  restart: always
+  image: elasticsearch:latest
   volumes:
       - ./elasticsearch:/usr/share/elasticsearch/data
   ports:
@@ -11,8 +11,12 @@ elasticsearch:
     nofile:
       soft: 20000
       hard: 65536
+  log_opt:
+    max-size: 50m
+    max-file: "1"
 
 logstash:
+  restart: always
   build: logstash/
   command: logstash -f /etc/logstash/conf.d/logstash.conf
   volumes:
@@ -21,8 +25,13 @@ logstash:
     - "12201:12201/udp"
   links:
     - elasticsearch
+  log_opt:
+    max-size: 50m
+    max-file: "1"
+
 kibana:
-  build: kibana/
+  restart: always
+  image: kibana
   volumes:
     - ./kibana/config/:/opt/kibana/config/
   ports:
@@ -31,3 +40,6 @@ kibana:
     - elasticsearch
   environment:
     NODE_OPTIONS: "--max-old-space-size=200"
+  log_opt:
+    max-size: 50m
+    max-file: "1"
